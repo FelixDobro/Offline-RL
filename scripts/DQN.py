@@ -5,7 +5,7 @@ from pathlib import Path
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 
-from scripts.utils import make_cart_pole_env, ReplayBuffer, e_greedy_action
+from scripts.utils import make_cart_pole_env, ReplayBuffer, e_greedy_action, soft_update
 
 import torch.nn.utils
 from gymnasium.vector import AsyncVectorEnv
@@ -22,6 +22,7 @@ import torch.nn.functional as F
 
 
 if __name__ == '__main__':
+    print(DEVICE)
 
     tb = SummaryWriter(LOG_DIR, flush_secs=30)
 
@@ -85,10 +86,8 @@ if __name__ == '__main__':
             loss.backward()
             torch.nn.utils.clip_grad_norm_(learning_model.parameters(), 0.1)
             optimizer.step()
+            soft_update(target_model, learning_model, TAU)
 
-        if ITERATIONS % TARGET_UPDATE_INTERVAL == 0:
-            print("Syncing Net")
-            target_model.load_state_dict(learning_model.state_dict())
 
         if ITERATIONS % SAVE_EVERY == 0:
             torch.save(

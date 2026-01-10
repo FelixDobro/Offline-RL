@@ -38,11 +38,13 @@ def evaluate_model(vector_env, model    ):
     return avg_return, len(returns)
 
 if __name__ == "__main__":
+    print(DEVICE)
+
     vector_env = AsyncVectorEnv(
         [make_cart_pole_env for _ in range(NUM_ENVS)],
         shared_memory=False
     )
-    model = QNet()
+    model = QNet().to(DEVICE)
     model_props = torch.load(f"{MODEL_DIR}")
     state_dict = model_props["model_state_dict"]
     model.load_state_dict(state_dict)

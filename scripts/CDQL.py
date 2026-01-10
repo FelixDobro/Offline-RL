@@ -34,7 +34,7 @@ class OfflineDataset(Dataset):
         return obs, rewards, terminated, next_obs, actions
 
 if __name__ == "__main__":
-
+    print(DEVICE)
     tb = SummaryWriter(LOG_DIR, flush_secs=30)
 
     model = QNet().to(DEVICE)
@@ -49,7 +49,7 @@ if __name__ == "__main__":
         data = pickle.load(f)
 
     dataset = OfflineDataset(data)
-    dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, num_workers= 1, shuffle=True)
+    dataloader = DataLoader(dataset, batch_size=BATCH_SIZE, shuffle=True)
 
     vector_env = AsyncVectorEnv(
         [make_cart_pole_env for _ in range(NUM_ENVS)],
@@ -67,6 +67,7 @@ if __name__ == "__main__":
             obs, reward, done, next_obs, actions = batch
 
             qvals = model(obs)
+
             chosen_q = torch.gather(qvals, dim=-1, index=actions)
 
             with torch.no_grad():
@@ -88,13 +89,13 @@ if __name__ == "__main__":
 
             soft_update(target_model, model, tau=TAU)
 
-            if num_batches % CHECK_MODEL == 0:
+            '''if num_batches % CHECK_MODEL == 0:
                 model.eval()
                 avg_return, _ = evaluate_model(vector_env, model)
                 tb.add_scalar("Batch/AVG Return", avg_return, num_batches)
                 tb.add_scalar("Batch/Mean Q-Values", qvals.mean().item(), num_batches)
                 model.train()
-
+'''
 
             if num_batches % SAVE_EVERY == 0:
                 torch.save(
@@ -103,7 +104,7 @@ if __name__ == "__main__":
                         "optimizer_state_dict": optimizer.state_dict(),
                         "iteration": i,
                     },
-                    os.path.join(CHECKPOINTS_DIR, f"model{(i // SAVE_EVERY)}.pt"),
+                    os.path.join(CHECKPOINTS_DIR, f"model{(num_batches // SAVE_EVERY)}.pt"),
                 )
                 print("saved")
 
@@ -114,6 +115,7 @@ if __name__ == "__main__":
             tb.add_scalar("Batch/total loss", total_loss.item(), num_batches)
             tb.add_scalar("Batch/CQL loss", cql_loss.item(), num_batches)
             tb.add_scalar("Batch/DQN loss", total_loss.item(), num_batches)
+            tb.add_scalar("Batch/Qvals mean", qvals.mean().item(), num_batches)
             num_batches += 1
 
 

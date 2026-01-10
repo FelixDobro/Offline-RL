@@ -12,9 +12,11 @@ from config import *
 from models.Q_net import QNet
 from scripts.utils import ReplayBuffer, e_greedy_action, make_cart_pole_env
 
-if __name__ == '__main__':
 
-    model = QNet()
+
+if __name__ == '__main__':
+    print(DEVICE)
+    model = QNet().to(DEVICE)
     if MODEL_VERSION != 0:
         model_props = torch.load(f"{MODEL_DIR}")
         state_dict = model_props["model_state_dict"]
