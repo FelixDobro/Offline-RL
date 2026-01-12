@@ -38,8 +38,6 @@ if __name__ == "__main__":
     tb = SummaryWriter(LOG_DIR, flush_secs=30)
 
     model = QNet().to(DEVICE)
-
-
     optimizer = torch.optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
     target_model = copy.deepcopy(model).to(DEVICE)

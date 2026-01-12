@@ -4,9 +4,9 @@ import torch
 
 PROJECT_ROOT = Path(__file__).resolve().parent
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-LOG_DIR = PROJECT_ROOT / "logs/offline/mid"
-CHECKPOINTS_DIR = PROJECT_ROOT / "checkpoints/offline/mid"
-DATA_DIR = PROJECT_ROOT / "data/mid"
+LOG_DIR = PROJECT_ROOT / "logs/offline/random"
+CHECKPOINTS_DIR = PROJECT_ROOT / "checkpoints/offline/random"
+DATA_DIR = PROJECT_ROOT / "data/random"
 
 
 Path.mkdir(CHECKPOINTS_DIR, exist_ok=True)
@@ -14,7 +14,7 @@ Path.mkdir(CHECKPOINTS_DIR, exist_ok=True)
 
 ## 25 = perfect, 0= random, 4=mid, 1 = bad
 
-MODEL_VERSION = 4
+MODEL_VERSION = 0
 MODEL_DIR = CHECKPOINTS_DIR / f"model{MODEL_VERSION}.pt"
 
 
@@ -36,10 +36,10 @@ BUFFER_SIZE = 100000
 
 # Data generation
 
-NUM_SAMPLES = 100000
-NUM_WORKERS = 4
+NUM_SAMPLES = 500000
+NUM_WORKERS = 1
 NUM_EPOCHS = 1000
-ALPHA = 0.5
+ALPHA = 0.75
 TAU = 0.005
 CHECK_MODEL = 500
 NUMBER_OF_EVAL_STEPS = 500
