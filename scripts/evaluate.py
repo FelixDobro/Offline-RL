@@ -8,7 +8,7 @@ from config import *
 from models.Q_net import QNet
 
 
-def evaluate_model(vector_env, model    ):
+def evaluate_model(vector_env, model):
 
     current_obs, _ = vector_env.reset()
 
@@ -45,9 +45,10 @@ if __name__ == "__main__":
         shared_memory=False
     )
     model = QNet().to(DEVICE)
-    model_props = torch.load(f"{MODEL_DIR}")
-    state_dict = model_props["model_state_dict"]
-    model.load_state_dict(state_dict)
+    if MODEL_VERSION:
+        model_props = torch.load(f"{MODEL_DIR}")
+        state_dict = model_props["model_state_dict"]
+        model.load_state_dict(state_dict)
     model.eval()
 
     evaluate_model(vector_env, model)

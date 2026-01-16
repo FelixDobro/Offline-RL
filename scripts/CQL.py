@@ -8,7 +8,7 @@ import copy
 import os
 from torch.utils.data import Dataset, DataLoader
 import pickle
-from scripts.evaluate_model import evaluate_model
+from scripts.evaluate import evaluate_model
 from torch.utils.tensorboard import SummaryWriter
 from config import *
 from models.Q_net import QNet
@@ -18,7 +18,7 @@ class OfflineDataset(Dataset):
     def __init__(self, data):
         self.obs = data["observations"]
         self.actions = data["actions"]
-        self.rewards = data["rewards"]
+        self.rewards = data["rewards"] * REWARD_SCALE
         self.terminated = data["terminals"]
         self.next_obs = data["next_observations"]
 
@@ -26,12 +26,8 @@ class OfflineDataset(Dataset):
         return len(self.obs)
 
     def __getitem__(self, idx):
-        obs = torch.tensor(self.obs[idx], device=DEVICE)
-        actions = torch.tensor(self.actions[idx], device=DEVICE)
-        rewards = torch.tensor(self.rewards[idx], device=DEVICE)
-        terminated = torch.tensor(self.terminated[idx], device=DEVICE)
-        next_obs = torch.tensor(self.next_obs[idx], device=DEVICE)
-        return obs, rewards, terminated, next_obs, actions
+
+        return self.obs[idx], self.rewards[idx], self.terminated[idx], self.next_obs[idx], self.actions[idx]
 
 if __name__ == "__main__":
     print(DEVICE)
@@ -63,7 +59,11 @@ if __name__ == "__main__":
         for batch in dataloader:
 
             obs, reward, done, next_obs, actions = batch
-
+            obs = obs.to(DEVICE)
+            actions = actions.to(DEVICE)
+            reward = reward.to(DEVICE)
+            done = done.to(DEVICE)
+            next_obs = next_obs.to(DEVICE)
             qvals = model(obs)
 
             chosen_q = torch.gather(qvals, dim=-1, index=actions)
@@ -71,7 +71,6 @@ if __name__ == "__main__":
             with torch.no_grad():
                 target_qvals = target_model(next_obs)
                 max_q, _ = torch.max(target_qvals, dim=-1, keepdim=True)
-
                 targets = reward + GAMMA * (1 - done) * max_q
 
             loss_dqn = F.mse_loss(chosen_q, targets)

@@ -19,7 +19,7 @@ class ReplayBuffer():
         obs = np.array(obs).reshape(-1, OBS_DIM)
         next_obs = np.array(next_obs).reshape(-1, OBS_DIM)
         actions = np.array(actions).reshape(-1, 1)
-        reward = np.array(reward).reshape(-1, 1)
+        reward = np.array(reward).reshape(-1, 1) * REWARD_SCALE
         terminated = np.array(terminated).reshape(-1, 1)
 
         batch_size = obs.shape[0]
