@@ -34,7 +34,7 @@ if __name__ == '__main__':
     while buffer.size < NUM_SAMPLES:
         obs_list, terminated_list, rewards_list, next_obs_list, action_list = [], [], [], [], []
         for i in range(SAMPLE_GEN):
-            actions = e_greedy_action(current_obs, model)
+            actions = e_greedy_action(current_obs, model, eps=EPSILON)
             next_obs, reward, terminated, truncated, _ = vector_env.step(actions)
 
             obs_list.append(current_obs)
