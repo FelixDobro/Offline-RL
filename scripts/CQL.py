@@ -73,7 +73,7 @@ if __name__ == "__main__":
                 max_q, _ = torch.max(target_qvals, dim=-1, keepdim=True)
                 targets = reward + GAMMA * (1 - done) * max_q
 
-            loss_dqn = F.mse_loss(chosen_q, targets)
+            loss_dqn = F.mse_loss(chosen_q, targets)  #Normal loss of DQN
             logsumexp_q = torch.logsumexp(qvals, dim=1).unsqueeze(1)
             cql_loss = (logsumexp_q - chosen_q).mean()
 

@@ -14,21 +14,21 @@ def evaluate_model(vector_env, model):
 
     returns = []
     running_scores = np.zeros(NUM_ENVS)
+    finished = 0
+    while finished < EVAL_EPISODES:
+        actions = e_greedy_action(current_obs, model, eps=-1)
+        next_obs, reward, terminated, truncated, _ = vector_env.step(actions)
+        running_scores += reward
+        dones = terminated | truncated
 
-    for i in range(NUMBER_OF_EVAL_STEPS):
-        for i in range(SAMPLE_GEN):
-            actions = e_greedy_action(current_obs, model, eps=-1)
-            next_obs, reward, terminated, truncated, _ = vector_env.step(actions)
-            running_scores += reward
-            dones = terminated | truncated
+        if np.any(dones):
+            scores = running_scores[dones]
+            finished += len(scores)
+            for score in scores:
+                returns.append(score)
+            running_scores[dones] = 0
 
-            if np.any(dones):
-                scores = running_scores[dones]
-                for score in scores:
-                    returns.append(score)
-                running_scores[dones] = 0
-
-            current_obs = next_obs
+        current_obs = next_obs
 
     avg_return = np.mean(returns)
 
