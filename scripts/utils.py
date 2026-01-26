@@ -2,20 +2,32 @@ import numpy as np
 from config import *
 import gymnasium as gym
 
+
 class ReplayBuffer():
+    """
+    Circular FIFO buffer for experience replay.
+    Pre-allocates memory to minimize overhead during vectorized data collection.
+    """
+
     def __init__(self, capacity):
         self.capacity = capacity
 
+        # Pre-allocate contiguous memory blocks for performance
         self.obs = np.zeros((self.capacity, OBS_DIM), dtype=np.float32)
         self.terminated = np.zeros((self.capacity, 1), dtype=np.float32)
         self.rewards = np.zeros((self.capacity, 1), dtype=np.float32)
         self.next_obs = np.zeros((self.capacity, OBS_DIM), dtype=np.float32)
         self.actions = np.zeros((self.capacity, 1), dtype=np.int64)
+
         self.position = 0
         self.size = 0
 
     def add(self, obs, reward, terminated, next_obs, actions):
-
+        """
+        Supports vectorized insertion of transitions.
+        Implements wrapping logic to maintain circularity when batch size exceeds remaining capacity.
+        """
+        # Ensure input consistency for vectorized storage
         obs = np.array(obs).reshape(-1, OBS_DIM)
         next_obs = np.array(next_obs).reshape(-1, OBS_DIM)
         actions = np.array(actions).reshape(-1, 1)
@@ -24,17 +36,19 @@ class ReplayBuffer():
 
         batch_size = obs.shape[0]
 
+        # Handle buffer overflow by chunking the update across the boundary
         if self.position + batch_size > self.capacity:
-
             first_chunk = self.capacity - self.position
             second_chunk = batch_size - first_chunk
 
+            # Fill up to the end of the buffer
             self.obs[self.position:] = obs[:first_chunk]
             self.actions[self.position:] = actions[:first_chunk]
             self.rewards[self.position:] = reward[:first_chunk]
             self.terminated[self.position:] = terminated[:first_chunk]
             self.next_obs[self.position:] = next_obs[:first_chunk]
 
+            # Wrap around and fill the beginning
             self.obs[:second_chunk] = obs[first_chunk:]
             self.actions[:second_chunk] = actions[first_chunk:]
             self.rewards[:second_chunk] = reward[first_chunk:]
@@ -43,7 +57,7 @@ class ReplayBuffer():
 
             self.position = second_chunk
         else:
-
+            # Standard sequential insertion
             idx_end = self.position + batch_size
             self.obs[self.position:idx_end] = obs
             self.actions[self.position:idx_end] = actions
@@ -55,6 +69,10 @@ class ReplayBuffer():
         self.size = min(self.capacity, self.size + batch_size)
 
     def sample(self, batch_size):
+        """
+        Uniformly samples a batch of transitions for off-policy training.
+        Returns tensors optimized for the target device.
+        """
         indices = np.random.randint(low=0, high=self.size, size=batch_size)
 
         obs = torch.tensor(self.obs[indices], device=DEVICE)
@@ -67,20 +85,33 @@ class ReplayBuffer():
 
 
 def make_cart_pole_env():
+    """Factory function for environment instantiation."""
     env = gym.make("CartPole-v1", render_mode="rgb_array")
     return env
 
+
 @torch.no_grad()
 def soft_update(target_model, model, tau):
+    """
+    Polyak averaging for target network synchronization.
+    Slowly tracks the main network parameters to stabilize TD-target calculations.
+    """
     for target_param, param in zip(target_model.parameters(), model.parameters()):
         target_param.data.copy_(tau * param.data + (1.0 - tau) * target_param.data)
 
+
 @torch.no_grad()
 def e_greedy_action(obs, model, eps=0.05):
+    """
+    Epsilon-greedy policy for balancing exploration and exploitation.
+    Optimized for vectorized observation inputs.
+    """
     if np.random.random() < eps:
-        return np.random.choice(a=[0,1], size=obs.shape[0])
+        # Uniform random exploration
+        return np.random.choice(a=[0, 1], size=obs.shape[0])
+
+    # Greedy exploitation via Q-value maximization
     obs_tensor = torch.tensor(obs, device=DEVICE)
     q_values = model(obs_tensor)
     actions = torch.argmax(q_values, dim=-1)
     return actions.detach().cpu().numpy()
-

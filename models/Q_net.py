@@ -2,6 +2,9 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from config import OBS_DIM
+
+# Simple Neural network, two hidden 64 neurons
+
 class QNet(nn.Module):
     def __init__(self):
         super().__init__()

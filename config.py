@@ -10,9 +10,10 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 DEVICE = torch.device("cpu")
 # Directory structure
-LOG_DIR = PROJECT_ROOT / "logs/offline/random/alpha=1.25"
-CHECKPOINTS_DIR = PROJECT_ROOT / "checkpoints/offline/random"
-DATA_DIR = PROJECT_ROOT / "data/random"
+LOG_DIR = PROJECT_ROOT / "logs/offline/random/alpha=1N=500k"
+CHECKPOINTS_DIR = PROJECT_ROOT / "checkpoints/online"
+
+DATA_DIR = PROJECT_ROOT / "data/random_500k"
 
 # Create directories automatically if they don't exist
 Path.mkdir(CHECKPOINTS_DIR, exist_ok=True, parents=True)
@@ -30,11 +31,11 @@ REWARD_SCALE = 0.1  # Scales rewards down (crucial for gradient stability!)
 # ==========================================
 # 3. Model & Optimization (Hyperparameters)
 # ==========================================
-MODEL_VERSION = 29  # ID for saving/loading 20=perfect(500) 11=mid(240), 0=random(10)
+MODEL_VERSION = 0 # ID for saving/loading 20=perfect(500) 11=mid(240), 0=random(10)
 LEARNING_RATE = 1e-4
 GAMMA = 0.98        # Discount Factor: Importance of future rewards (0=short-sighted, 1=far-sighted)
 TAU = 0.005         # Soft Update: How fast the target net follows the main net
-EPSILON = 1.00      # Exploration: Probability of random actions (static here)
+EPSILON = 1     # Exploration: Probability of random actions (static here)
 
 
 # ==========================================
@@ -60,9 +61,11 @@ MODEL_DIR = CHECKPOINTS_DIR / f"model{MODEL_VERSION}.pt"
 # 6. Offline Data / Legacy / Eval
 # ==========================================
 # Parameters for separate data generation or evaluation
-NUM_SAMPLES = 100_000
+NUM_SAMPLES = 500_000
 NUM_WORKERS = 4
 NUM_EPOCHS = 1000
-ALPHA = 1.25
+ALPHA = 1
 
 EVAL_EPISODES = 50
+SEED = 2
+FPS=4
