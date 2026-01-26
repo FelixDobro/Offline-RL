@@ -1,0 +1,11 @@
+*.ipynb
+*logs
+
+
+checkpoints/
+data/
+videos/
+
+.idea/
+**/__pycache__/
+*.py[cod]
