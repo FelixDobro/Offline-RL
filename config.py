@@ -10,13 +10,14 @@ PROJECT_ROOT = Path(__file__).resolve().parent
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 DEVICE = torch.device("cpu")
 # Directory structure
-LOG_DIR = PROJECT_ROOT / "logs/offline/random/alpha=1N=500k"
+LOG_DIR = PROJECT_ROOT / "logs/offline/random/alpha="
 CHECKPOINTS_DIR = PROJECT_ROOT / "checkpoints/online"
 
 DATA_DIR = PROJECT_ROOT / "data/random_500k"
 
 # Create directories automatically if they don't exist
 Path.mkdir(CHECKPOINTS_DIR, exist_ok=True, parents=True)
+Path.mkdir(DATA_DIR, exist_ok=True, parents=True)
 
 
 
@@ -31,7 +32,7 @@ REWARD_SCALE = 0.1  # Scales rewards down (crucial for gradient stability!)
 # ==========================================
 # 3. Model & Optimization (Hyperparameters)
 # ==========================================
-MODEL_VERSION = 0 # ID for saving/loading 20=perfect(500) 11=mid(240), 0=random(10)
+MODEL_VERSION = 6 # ID for saving/loading 20=perfect(500) 11=mid(240), 0=random(10)
 LEARNING_RATE = 1e-4
 GAMMA = 0.98        # Discount Factor: Importance of future rewards (0=short-sighted, 1=far-sighted)
 TAU = 0.005         # Soft Update: How fast the target net follows the main net
