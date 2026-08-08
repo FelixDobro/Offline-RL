@@ -1,6 +1,12 @@
 # Offline Reinforcement Learning on CartPole
 
 
+<div align="center">
+
+https://github.com/user-attachments/assets/4c37c6f7-44d6-4f45-a278-57ef74064814
+
+</div>
+
 This repository yields the Code for a university project in Deep Learning at the technical university of Vienna. The objective is to learn the Cartpole environment using Offline Reinforcement Learning methods.
 
 **Deep Q-Networks (DQN)** and **Conservative Q-Learning (CQL)** to solve the CartPole environment entirely offline. 
